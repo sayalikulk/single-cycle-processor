@@ -60,7 +60,7 @@ module hart #(
     // word right by 16 bits and sign/zero extend as appropriate.
     //
     // To perform a byte write at address 0x00002003, align `o_dmem_addr` to
-    // `0x00002000`, assert `o_dmem_wen`, and set the mask to 0b1000 to
+    // `0x00002003`, assert `o_dmem_wen`, and set the mask to 0b1000 to
     // indicate that only the upper byte should be written. On the next clock
     // cycle, the upper byte of `o_dmem_wdata` will be written to memory, with
     // the other three bytes of the aligned word unaffected. Remember to shift
@@ -131,6 +131,49 @@ module hart #(
 `endif
 );
     // Fill in your implementation here.
+    PC pc_inst (
+        .i_clk(i_clk),
+        .i_rst(i_rst),
+        .current_pc(o_imem_raddr),
+        .en_branch(/* Branch enable from control unit */),
+        .branch_target(/* Branch target from ALU/Control unit here */),
+        //.next_pc(i_imem_rdata)
+    );
+
+    Control_unit control_unit_inst (
+        .opcode(i_imem_rdata[6:0]),
+        .alu_src(ALU_src), //ALU source selection signal from control unit and will be connected to ALU module
+        .mem_to_reg(mem_to_reg),  //Memory to register selection signal from control unit and will be connected to multiplexer before writeback stage
+        .reg_write(reg_write), //Register write enable signal from control unit and will be connected to register file
+        // .mem_read(/* Connect to appropriate wire */),
+        // .mem_write(/* Connect to appropriate wire */), //Memory interface is already provided in testbench
+        .branch(Branch),  //Branch will coming from control unit, anded with ALU_zero to generate en_branch
+        .Jump(Jump),
+        .Jalr(Jalr),
+        .load_upper_imm(load_upper_imm),
+        .ALU_OP(ALU_OP),
+        .upper_imm(upper_imm)
+    );
+
+    alu alu_inst (
+        .i_opsel(i_opsel),
+        .i_op1(i_op1),
+        .i_op2(i_op2),
+        .o_result(o_result),
+        .alu_zero(alu_zero)
+    );
+
+    rf rf_inst(
+        
+    )
+
+
+    
+
+
+
+
+    
 endmodule
 
 `default_nettype wire
