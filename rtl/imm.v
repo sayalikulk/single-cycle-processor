@@ -39,7 +39,7 @@ module imm (
                          (i_inst[6:0] == 7'b0110111 || //LUI instruction
                           i_inst[6:0] == 7'b0010111)   //AUIPC instruction
                          ? imm_u :
-                         (i_inst[6:0] == 7'b1101111)   //JAL instruction
+                         (i_inst[6:0] == 7'b1100111)   //JALR instruction
                          ? imm_j :
                          32'b0; //Default case (R-type instructions)
 
