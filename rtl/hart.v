@@ -172,7 +172,7 @@ module hart #(
     imm imm_gen_inst (
         .i_inst(i_imem_rdata),
         .branch_target(branch_target),
-        .o_immediate(o_immediate)
+        .o_immediate(o_imm)
     );
 
     // --- ALU Control ---
@@ -207,8 +207,8 @@ module hart #(
     );
 
     // --- Branch logic ---
-    assign en_branch    = Branch & alu_zero;
-    assign branch_target = o_imm; // simple branch offset
+    //assign en_branch    = Branch & alu_zero;
+    //assign branch_target = o_imm; // simple branch offset
 
     // --- Writeback ---
     assign writeback_data = (mem_to_reg) ? i_dmem_rdata : o_result;
