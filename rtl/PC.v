@@ -8,6 +8,7 @@ module PC(
     output reg [31:0] current_pc // Next PC value to be sent to hart
 );
     wire branch_PC;
+    wire ebreak;
     assign branch_PC = current_pc + branch_target;
 
     always @(posedge i_clk) begin
@@ -15,6 +16,8 @@ module PC(
             current_pc <= 32'h00000000;
         else if (en_branch) // If branch is taken, update PC to branch target
             current_pc <= branch_PC;
+        else if (ebreak) // If ebreak is encountered, halt the CPU
+            current_pc <= current_pc; // Hold PC value (could also implement halt logic)
         else             // Otherwise, increment PC by 4(memory is byte-addressable)
             current_pc <= current_pc + 4; 
     end
