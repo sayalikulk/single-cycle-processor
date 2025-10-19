@@ -47,6 +47,9 @@ module rf #(
     input  wire        i_rd_wen,
     input  wire [ 4:0] i_rd_waddr,
     input  wire [31:0] i_rd_wdata
+
+    // control c_inst(.out(i_rd_wdata));
+    // mem m_inst(.out(i_rd_wdata));
 );
         reg [31:0] regs [31:0];
         integer i;

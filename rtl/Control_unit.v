@@ -6,6 +6,7 @@
  */
 module Control_unit (
     input wire [6:0] opcode,        // 7-bit opcode from instruction[6:0]
+    input wire ALU_zero,
     
     // Control Signals
     output wire mem_to_reg,   // Selects (memory data) or (ALU result) to write to register
@@ -22,7 +23,8 @@ module Control_unit (
     
     // U-Type Instruction Signals
     output wire load_upper_imm, // U-type (LUI)
-    output wire upper_imm       // U-type (AUIPC) - Renamed from original
+    output wire upper_imm,      // U-type (AUIPC) - Renamed from original
+    output wire en_branch
 );
 
     // --- Opcode Definitions ---
@@ -105,4 +107,7 @@ module Control_unit (
                     (OP_ADD_UPPER_IMM)  ? 3'b110 :
                     (OP_JUMP)   ? 3'b111 : // Anyway Jump won't be used in ALU control so not distincting between JAL and JALR
                     3'b000; // Default to R-type
+
+    assign en_branch = ALU_zero && Branch;
+    
 endmodule

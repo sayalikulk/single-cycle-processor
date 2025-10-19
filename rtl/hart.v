@@ -135,8 +135,8 @@ module hart #(
         .i_clk(i_clk),
         .i_rst(i_rst),
         .current_pc(o_imem_raddr),
-        .en_branch(/* Branch enable from control unit */),
-        .branch_target(/* Branch target from ALU/Control unit here */),
+        .en_branch(en_branch),
+        .branch_target(PC+imm),
         //.next_pc(i_imem_rdata)
     );
 
