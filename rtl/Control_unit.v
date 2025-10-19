@@ -29,15 +29,15 @@ module Control_unit (
 
     // --- Opcode Definitions ---
     // Using localparam makes the code much more readable
-    localparam R_TYPE_OP  = 7'b0110011; // R-type
-    localparam I_TYPE_OP  = 7'b0010011; // I-type (Arithmetic)
-    localparam LOAD_OP    = 7'b0000011; // I-type (Load)
-    localparam STORE_OP   = 7'b0100011; // S-type (Store)
-    localparam BRANCH_OP  = 7'b1100011; // B-type (Branch)
-    localparam JALR_OP    = 7'b1100111; // I-type (JALR)
-    localparam JAL_OP     = 7'b1101111; // J-type (JAL)
-    localparam LUI_OP     = 7'b0110111; // U-type (LUI)
-    localparam AUIPC_OP   = 7'b0010111; // U-type (AUIPC)
+    localparam OP_R_TYPE  = 7'b0110011; // R-type
+    localparam OP_I_TYPE  = 7'b0010011; // I-type (Arithmetic)
+    localparam OP_LOAD    = 7'b0000011; // I-type (Load)
+    localparam OP_STORE   = 7'b0100011; // S-type (Store)
+    localparam OP_BRANCH  = 7'b1100011; // B-type (Branch)
+    localparam OP_JALR    = 7'b1100111; // I-type (JALR)
+    localparam OP_JUMP     = 7'b1101111; // J-type (JAL)
+    localparam OP_LOAD_UPPER_IMM     = 7'b0110111; // U-type (LUI)
+    localparam OP_ADD_UPPER_IMM   = 7'b0010111; // U-type (AUIPC)
 
     // --- 1. Instruction Type Decoding ---
     // Internal wires for primary instruction types
