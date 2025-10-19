@@ -152,23 +152,27 @@ module hart #(
     // --- Control Unit ---
     Control_unit control_unit_inst (
         .opcode(i_imem_rdata[6:0]),
+        .ALU_zero(ALU_zero),
         .alu_src(ALU_src),
         .mem_to_reg(mem_to_reg),
         .reg_write(reg_write),
         .mem_read(o_dmem_ren),
         .mem_write(o_dmem_wen),
-        .branch(Branch),
+        .Branch(Branch),
         .Jump(Jump),
         .Jalr(Jalr),
         .load_upper_imm(load_upper_imm),
         .ALU_OP(ALU_OP),
-        .upper_imm(upper_imm)
+        .upper_imm(upper_imm),
+        .en_branch(en_branch)
     );
 
     // --- Immediate Generator ---
     imm imm_gen_inst (
         .i_inst(i_imem_rdata),
-        .o_imm(o_imm)
+        .branch_target(branch_target),
+        .i_format(000010),
+        .o_immediate(o_immediate)
     );
 
     // --- ALU Control ---
