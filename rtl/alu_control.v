@@ -16,7 +16,7 @@ module alu_control (
     input wire [6:0] i_funct7,
     
     // Output to the ALU's operation select port
-    output reg [3:0] o_alu_control
+    output wire [3:0] o_alu_control
 );
     // ALU Operation Codes
     localparam OP_R_TYPE = 3'b000;
