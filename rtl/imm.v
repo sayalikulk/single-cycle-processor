@@ -8,15 +8,7 @@ module imm (
     // Input instruction word. This is used to extract the relevant immediate
     // bits and assemble them into the final immediate.
     input  wire [31:0] i_inst,
-    // Instruction format, determined by the instruction decoder based on the
-    // opcode. This is one-hot encoded according to the following format:
-    // [0] R-type (don't-care, see below)
-    // [1] I-type
-    // [2] S-type
-    // [3] B-type
-    // [4] U-type
-    // [5] J-type
-    input  wire [ 5:0] i_format,
+
     // Output 32-bit immediate, sign-extended from the immediate bitstring.
     // Because the R-type format does not have an immediate, the output
     // immediate can be treated as a don't-care under this case. It is
@@ -25,6 +17,7 @@ module imm (
     output wire [31:0] branch_target
 );
     // Fill in your implementation here.
+
     wire [31:0] imm_i; //I-type immediate
     wire [31:0] imm_s; //S-type immediate
     wire [31:0] imm_u; //U-type immediate
@@ -37,12 +30,18 @@ module imm (
     assign imm_j = {{12{i_inst[31]}}, i_inst[19:12], i_inst[20], i_inst[30:21], 1'b0}; //Sign-extend and assign bits [31], [19:12], [20], [30:21] and append 0 at LSB
 
     //Mux to select the appropriate immediate based on instruction format
-    assign o_immediate = (i_format[1]) ? imm_i :
-                         (i_format[2]) ? imm_s :
-                         (i_format[3]) ? branch_target :
-                         (i_format[4]) ? imm_u :
-                         (i_format[5]) ? imm_j :
-                         32'b0; //R-type or default case
+    assign o_immediate = (i_inst[6:0] == 7'b0010011 || //I-type instructions
+                          i_inst[6:0] == 7'b0000011 || //Load instructions
+                          i_inst[6:0] == 7'b1100111)   //JALR instruction
+                         ? imm_i :
+                         (i_inst[6:0] == 7'b0100011)   //S-type instructions
+                         ? imm_s :
+                         (i_inst[6:0] == 7'b0110111 || //LUI instruction
+                          i_inst[6:0] == 7'b0010111)   //AUIPC instruction
+                         ? imm_u :
+                         (i_inst[6:0] == 7'b1101111)   //JAL instruction
+                         ? imm_j :
+                         32'b0; //Default case (R-type instructions)
 
 endmodule
 

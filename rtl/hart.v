@@ -149,6 +149,7 @@ module hart #(
         .branch_target(branch_target)
     );
 
+    
     // --- Control Unit ---
     Control_unit control_unit_inst (
         .opcode(i_imem_rdata[6:0]),
@@ -171,7 +172,6 @@ module hart #(
     imm imm_gen_inst (
         .i_inst(i_imem_rdata),
         .branch_target(branch_target),
-        .i_format(000010),
         .o_immediate(o_immediate)
     );
 
