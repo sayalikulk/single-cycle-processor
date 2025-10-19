@@ -98,14 +98,14 @@ module Control_unit (
     // 101: OP_LOAD_UPPER_IMM (U-type)
     // 110: OP_ADD_UPPER_IMM (U-type)
     // 111: OP_JUMP (J-type)
-    assign ALU_OP = (OP_R_TYPE) ? 3'b000 :
-                    (OP_I_TYPE) ? 3'b001 :
-                    (OP_LOAD)   ? 3'b010 :
-                    (OP_STORE)  ? 3'b011 :
-                    (OP_BRANCH) ? 3'b100 :
-                    (OP_LOAD_UPPER_IMM) ? 3'b101 :
-                    (OP_ADD_UPPER_IMM)  ? 3'b110 :
-                    (OP_JUMP)   ? 3'b111 : // Anyway Jump won't be used in ALU control so not distincting between JAL and JALR
+    assign ALU_OP = (opcode == OP_R_TYPE) ? 3'b000 :
+                    (opcode == OP_I_TYPE) ? 3'b001 :
+                    (opcode == OP_LOAD)   ? 3'b010 :
+                    (opcode == OP_STORE)  ? 3'b011 :
+                    (opcode == OP_BRANCH) ? 3'b100 :
+                    (opcode == OP_LOAD_UPPER_IMM) ? 3'b101 :
+                    (opcode == OP_ADD_UPPER_IMM)  ? 3'b110 :
+                    (opcode == OP_JUMP)   ? 3'b111 : // Anyway Jump won't be used in ALU control so not distincting between JAL and JALR
                     3'b000; // Default to R-type
 
     assign en_branch = ALU_zero && Branch;
