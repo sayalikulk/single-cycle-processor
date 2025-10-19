@@ -155,6 +155,8 @@ module hart #(
         .upper_imm(upper_imm)
     );
 
+
+
     alu alu_inst (
         .i_opsel(i_opsel),
         .i_op1(i_op1),
@@ -166,6 +168,20 @@ module hart #(
     rf rf_inst(
         
     )
+
+    //Immediate generation module instantiation
+    imm_gen imm_gen_inst (
+        .i_inst(i_imem_rdata),
+        .o_imm(o_imm)
+    );
+
+    //ALU control module instantiation
+    alu_control alu_control_inst (
+        .i_alu_op(ALU_OP),
+        .i_funct3(i_imem_rdata[14:12]),
+        .i_funct7(i_imem_rdata[31:25]),
+        .o_alu_control(i_opsel)
+    );
 
 
     

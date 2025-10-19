@@ -1,50 +1,108 @@
-module Control_unit(
-    input wire [6:0] opcode,  //7-bit opcode will come from instruction[6:0]
-        
-          
-    output wire mem_to_reg,
-    output wire reg_write,
-    output wire mem_read,
-    output wire mem_write,
-    output wire Branch,
-    output wire Jump,
-    output wire Jalr, //Jump and Link
-    output wire load_upper_imm,
-    output wire upper_imm,
-    output wire alu_src,
-    output wire [1:0]ALU_OP
-    // output wire Add_upper_imm,
+/*
+ * Control Unit for a RISC-V CPU
+ *
+ * Decodes the 7-bit instruction opcode to generate control signals
+ * for the rest of the datapath.
+ */
+module Control_unit (
+    input wire [6:0] opcode,        // 7-bit opcode from instruction[6:0]
     
+    // Control Signals
+    output wire mem_to_reg,   // Selects (memory data) or (ALU result) to write to register
+    output wire reg_write,    // Enable writing to the register file
+    output wire mem_read,     // Enable reading from data memory
+    output wire mem_write,    // Enable writing to data memory
+    output wire alu_src,      // Selects (register 2) or (immediate) as 2nd ALU input
+    output wire [2:0] ALU_OP, // Control bits for the ALU Control unit
+    
+    // Instruction Type Signals (can be used for PC logic)
+    output wire Branch,       // B-type (e.g., BEQ)
+    output wire Jump,         // J-type (JAL)
+    output wire Jalr,         // I-type (JALR)
+    
+    // U-Type Instruction Signals
+    output wire load_upper_imm, // U-type (LUI)
+    output wire upper_imm       // U-type (AUIPC) - Renamed from original
 );
-    wire Add_upper_imm;
-    wire R_type;
-    wire I_type;  
-    wire Imm_Load;
-    wire Arith_I_type;
-    wire Store;
 
-    /*Intermediate signals for instruction types*/
-    assign R_type = (opcode == 7'b0110011) ? 1'b1 : 1'b0; //R-type instruction signal
-    assign I_type = (Imm_load | Arith_I_type | Jalr); // I-type has three different instructions
-    assign Imm_Load = (opcode == 7'b0000011) ? 1'b1 : 1'b0; //I-type instruction signal
-    assign Arith_I_type = (opcode == 7'b0010011) ? 1'b1 : 1'b0; //Load instruction signal
-    assign Store = (opcode == 7'b0100011) ? 1'b1 : 1'b0; //Store instruction signal
-    assign Branch = (opcode == 7'b1100011) ? 1'b1 : 1'b0; //Branch instruction signal
-    //assign upper_imm = (opcode == 7'b0010111) ? 1'b1 : 1'b0; //AUIPC instruction signal is high or it will take immediate value only 
+    // --- Opcode Definitions ---
+    // Using localparam makes the code much more readable
+    localparam R_TYPE_OP  = 7'b0110011; // R-type
+    localparam I_TYPE_OP  = 7'b0010011; // I-type (Arithmetic)
+    localparam LOAD_OP    = 7'b0000011; // I-type (Load)
+    localparam STORE_OP   = 7'b0100011; // S-type (Store)
+    localparam BRANCH_OP  = 7'b1100011; // B-type (Branch)
+    localparam JALR_OP    = 7'b1100111; // I-type (JALR)
+    localparam JAL_OP     = 7'b1101111; // J-type (JAL)
+    localparam LUI_OP     = 7'b0110111; // U-type (LUI)
+    localparam AUIPC_OP   = 7'b0010111; // U-type (AUIPC)
 
-    /*Control signal assignments based on instruction types*/
-    assign Jal = (opcode == 7'b1101111) ? 1'b1 : 1'b0; //Jump signal for JAL instruction
-    assign upper_imm = Add_upper_imm | load_upper_imm; //To assert U type instruction signal
-    assign load_upper_imm = (opcode == 7'b0110111) ? 1'b1 : 1'b0; //LUI instruction signal 
-    assign Add_upper_imm = (opcode == 7'b0010111) ? 1'b1 : 1'b0; //AUIPC instruction signal
-    assign Jalr = (opcode == 7'b1100111) ? 1'b1 : 1'b0; //JALR instruction signal
-    assign alu_src = (I_type || load || store || Jalr || load_upper_imm || Add_upper_imm) ? 1'b1 : 1'b0; //ALU source selection
-    assign mem_to_reg = (load) ? 1'b1 : 1'b0; //Memory to register selection
-    assign reg_write = (R_type || I_type || load || load_upper_imm || Add_upper_imm || Jump) ? 1'b1 : 1'b0; //Register write enable
-    assign mem_read = (load) ? 1'b1 : 1'b0; //Memory read enable
-    assign mem_write = (store) ? 1'b1 : 1'b0; //Memory write enable
-    assign ALU_OP = (R_type) ? 2'b00:
-                    (I_type) ? 2'b01:
-                    (Store)  ? 2'b10:
-                    (Branch) ? 2'b11;
+    // --- 1. Instruction Type Decoding ---
+    // Internal wires for primary instruction types
+    wire r_type;
+    wire load;
+    wire i_type_arith;
+    wire store;
+
+    // Decode opcodes into 1-bit signals
+    // Some are internal, others are outputs
+    assign r_type         = (opcode == R_TYPE_OP);
+    assign load           = (opcode == LOAD_OP);
+    assign i_type_arith   = (opcode == I_TYPE_OP);
+    assign store          = (opcode == STORE_OP);
+    
+    assign Branch         = (opcode == BRANCH_OP);  // B-type
+    assign Jalr           = (opcode == JALR_OP);    // I-type
+    assign Jump           = (opcode == JAL_OP);     // J-type
+    assign load_upper_imm = (opcode == LUI_OP);     // U-type
+    assign upper_imm      = (opcode == AUIPC_OP);   // U-type
+
+    // --- 2. Composite Signal Generation ---
+    // Group instruction types for easier control signal logic
+    
+    // I-type includes Loads, I-type Arithmetic, and JALR
+    wire i_type;
+    assign i_type = (load | i_type_arith | Jalr);
+    
+    // U-type includes LUI and AUIPC
+    wire u_type;
+    assign u_type = (load_upper_imm | upper_imm);
+
+
+    // --- 3. Control Signal Generation ---
+    
+    // alu_src: 1 if 2nd ALU operand is immediate (I, S, U types)
+    //          0 if 2nd ALU operand is register (R, B types)
+    assign alu_src = (i_type | store | u_type);
+
+    // mem_to_reg: 1 if writing data from memory to register (Loads)
+    assign mem_to_reg = load;
+
+    // reg_write: 1 for instructions that write to the register file (R, I, U, J)
+    assign reg_write = (r_type | i_type | u_type | Jump);
+
+    // mem_read: 1 for instructions that read from data memory (Loads)
+    assign mem_read = load;
+
+    // mem_write: 1 for instructions that write to data memory (Stores)
+    assign mem_write = store;
+
+    // ALU_OP: 3 bit control signal to ALU Control unit
+    // 000: OP_R_TYPE (R-type)
+    // 001: OP_I_TYPE (I-type)
+    // 010: OP_LOAD
+    // 011: OP_STORE
+    // 100: OP_BRANCH
+    // 101: OP_LOAD_UPPER_IMM (U-type)
+    // 110: OP_ADD_UPPER_IMM (U-type)
+    // 111: OP_JUMP (J-type)
+    assign ALU_OP = (OP_R_TYPE) ? 3'b000 :
+                    (OP_I_TYPE) ? 3'b001 :
+                    (OP_LOAD)   ? 3'b010 :
+                    (OP_STORE)  ? 3'b011 :
+                    (OP_BRANCH) ? 3'b100 :
+                    (OP_LOAD_UPPER_IMM) ? 3'b101 :
+                    (OP_ADD_UPPER_IMM)  ? 3'b110 :
+                    (OP_JUMP)   ? 3'b111 : // Anyway Jump won't be used in ALU control so not distincting between JAL and JALR
+                    3'b000; // Default to R-type
 endmodule
