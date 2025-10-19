@@ -8,7 +8,7 @@ module PC(
     output reg [31:0] current_pc // Next PC value to be sent to hart
 );
     wire branch_PC;
-    assign branch_PC = PC + branch_target; 
+    assign branch_PC = current_pc + branch_target;
 
     always @(posedge i_clk) begin
         if (i_rst)       // Synchronous Reset

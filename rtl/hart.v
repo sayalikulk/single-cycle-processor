@@ -136,8 +136,7 @@ module hart #(
         .i_rst(i_rst),
         .current_pc(o_imem_raddr),
         .en_branch(en_branch),
-        .branch_target(PC+imm),
-        //.next_pc(i_imem_rdata)
+        .branch_target(branch_target)
     );
 
     Control_unit control_unit_inst (
@@ -182,13 +181,6 @@ module hart #(
         .i_funct7(i_imem_rdata[31:25]),
         .o_alu_control(i_opsel)
     );
-
-
-    
-
-
-
-
     
 endmodule
 
