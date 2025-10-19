@@ -166,7 +166,7 @@ module hart #(
     );
 
     // --- Immediate Generator ---
-    imm_gen imm_gen_inst (
+    imm imm_gen_inst (
         .i_inst(i_imem_rdata),
         .o_imm(o_imm)
     );
@@ -180,7 +180,7 @@ module hart #(
     );
 
     // --- Register File ---
-    rf #(.BYPASS_EN(1)) rf_inst (
+    reg_file rf (
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_rs1_raddr(i_imem_rdata[19:15]),
@@ -194,7 +194,7 @@ module hart #(
 
     // --- ALU ---
     assign i_op2 = (ALU_src) ? o_imm : o_rs2;
-    alu alu_inst (
+    ALU alu_inst (
         .i_opsel(i_opsel),
         .i_op1(i_op1),
         .i_op2(i_op2),

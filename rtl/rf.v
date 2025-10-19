@@ -9,7 +9,7 @@
 // NOTE: This can be implemented either by silently discarding writes to
 // address 5'd0, or by muxing the output to zero when reading from that
 // address.
-module rf #(
+module reg_file #(
     // When this parameter is set to 1, "RF bypass" mode is enabled. This
     // allows data at the write port to be observed at the read ports
     // immediately without having to wait for the next clock edge. This is
@@ -17,7 +17,7 @@ module rf #(
     // cause a single-cycle processor to behave incorrectly. You are required
     // to implement and test both modes. In phase 4, you will disable this
     // parameter, before enabling it in phase 6.
-    parameter BYPASS_EN = 0
+    parameter BYPASS_EN = 1
 ) (
     // Global clock.
     input  wire        i_clk,
@@ -51,25 +51,25 @@ module rf #(
     // control c_inst(.out(i_rd_wdata));
     // mem m_inst(.out(i_rd_wdata));
 );
-        reg [31:0] regs [31:0];
+        reg [31:0] mem [31:0];
         integer i;
 
     // Asynchronous read ports with BYPASS_EN support
     assign o_rs1_rdata = (i_rs1_raddr == 5'd0) ? 32'd0 :
                      (BYPASS_EN && i_rd_wen && (i_rs1_raddr == i_rd_waddr) && (i_rd_waddr != 5'd0)) ? i_rd_wdata :
-                     regs[i_rs1_raddr];
+                     mem[i_rs1_raddr];
 
     assign o_rs2_rdata = (i_rs2_raddr == 5'd0) ? 32'd0 :
                      (BYPASS_EN && i_rd_wen && (i_rs2_raddr == i_rd_waddr) && (i_rd_waddr != 5'd0)) ? i_rd_wdata :
-                     regs[i_rs2_raddr];
+                     mem[i_rs2_raddr];
 
     // Synchronous write + reset
     always @(posedge i_clk) begin
         if (i_rst) begin
             for (i = 0; i < 32; i = i + 1)
-                regs[i] <= 32'd0;
+                mem[i] <= 32'd0;
         end else if (i_rd_wen && (i_rd_waddr != 5'd0)) begin
-            regs[i_rd_waddr] <= i_rd_wdata;
+                mem[i_rd_waddr] <= i_rd_wdata;
         end
     end
 

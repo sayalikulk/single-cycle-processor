@@ -48,16 +48,16 @@ module Control_unit (
 
     // Decode opcodes into 1-bit signals
     // Some are internal, others are outputs
-    assign r_type         = (opcode == R_TYPE_OP);
-    assign load           = (opcode == LOAD_OP);
-    assign i_type_arith   = (opcode == I_TYPE_OP);
-    assign store          = (opcode == STORE_OP);
+    assign r_type         = (opcode == OP_R_TYPE);
+    assign load           = (opcode == OP_LOAD);
+    assign i_type_arith   = (opcode == OP_I_TYPE);
+    assign store          = (opcode == OP_STORE);
     
-    assign Branch         = (opcode == BRANCH_OP);  // B-type
-    assign Jalr           = (opcode == JALR_OP);    // I-type
-    assign Jump           = (opcode == JAL_OP);     // J-type
-    assign load_upper_imm = (opcode == LUI_OP);     // U-type
-    assign upper_imm      = (opcode == AUIPC_OP);   // U-type
+    assign Branch         = (opcode == OP_BRANCH);  // B-type
+    assign Jalr           = (opcode == OP_JALR);    // I-type
+    assign Jump           = (opcode == OP_JUMP);     // J-type
+    assign load_upper_imm = (opcode == OP_LOAD_UPPER_IMM);     // U-type
+    assign upper_imm      = (opcode == OP_ADD_UPPER_IMM);   // U-type
 
     // --- 2. Composite Signal Generation ---
     // Group instruction types for easier control signal logic
