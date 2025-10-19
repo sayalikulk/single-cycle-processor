@@ -202,7 +202,7 @@ module hart #(
         .o_rs2_rdata(o_rs2), // Connect to ALU second operand or store data
         .i_rd_wen(reg_write), // Register write enable from control unit
         .i_rd_waddr(i_imem_rdata[11:7]), // rd address from instruction
-        .i_rd_wdata()
+        .i_rd_wdata(/* Connect to data to be written back to register file */)
     );
 
     //ALU control module instantiation
