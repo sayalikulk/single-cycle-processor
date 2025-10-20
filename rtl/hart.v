@@ -213,11 +213,17 @@ module hart #(
     // --- Writeback ---
     assign writeback_data = (mem_to_reg) ? i_dmem_rdata : o_result;
     wire ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
+    assign o_retire_halt      = ebreak;
+    wire rf_wen; // Disable register file write on ebreak
+    assign rf_wen = reg_write & ~ebreak;
+    assign o_dmem_wen = o_dmem_wen & ~ebreak;
+    assign o_dmem_ren = o_dmem_ren & ~ebreak;
+    
     // --- Data Memory interface ---
     assign o_dmem_addr  = o_result;
     assign o_dmem_wdata = o_rs2;
     assign o_dmem_mask  = 4'b1111; // simple word access for now
-    assign o_retire_halt      = ebreak;
+    
 
     /* --- Retire interface ---
     assign o_retire_valid     = 1'b1;
