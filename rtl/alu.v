@@ -3,8 +3,8 @@ module ALU (
     input wire [31:0] i_op1,     // First ALU operand
     input wire [31:0] i_op2,     // Second ALU operand
     output wire [31:0] o_result,  // ALU result
-    output wire alu_zero,         // ALU zero flag
-    input wire [31:0] branch_target
+    output wire alu_zero        // ALU zero flag
+    //input wire [31:0] branch_target
 );
 
     // Combinational logic for ALU operations
