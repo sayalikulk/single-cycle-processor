@@ -225,7 +225,7 @@ module hart #(
     assign o_dmem_mask  = 4'b1111; // simple word access for now
     
 
-    /* --- Retire interface ---
+      //--- Retire interface ---
     assign o_retire_valid     = 1'b1;
     assign o_retire_inst      = i_imem_rdata;
     assign o_retire_trap      = 1'b0;
@@ -238,7 +238,7 @@ module hart #(
     assign o_retire_rd_wdata  = writeback_data;
     assign o_retire_pc        = o_imem_raddr;
     assign o_retire_next_pc   = o_imem_raddr + 4;
-    */
+
 endmodule
 
 
