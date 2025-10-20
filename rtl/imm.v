@@ -29,20 +29,23 @@ module imm (
     assign imm_u = {i_inst[31:12], 12'b0}; //Assign bits [31:12] and append 12 zeros at LSB
     assign imm_j = {{12{i_inst[31]}}, i_inst[19:12], i_inst[20], i_inst[30:21], 1'b0}; //Sign-extend and assign bits [31], [19:12], [20], [30:21] and append 0 at LSB
 
-    //Mux to select the appropriate immediate based on instruction format
-    assign o_immediate = (i_inst[6:0] == 7'b0010011 || //I-type instructions
-                          i_inst[6:0] == 7'b0000011 || //Load instructions
-                          i_inst[6:0] == 7'b1100111)   //JALR instruction
-                         ? imm_i :
-                         (i_inst[6:0] == 7'b0100011)   //S-type instructions
-                         ? imm_s :
-                         (i_inst[6:0] == 7'b0110111 || //LUI instruction
-                          i_inst[6:0] == 7'b0010111)   //AUIPC instruction
-                         ? imm_u :
-                         (i_inst[6:0] == 7'b1100111)   //JALR instruction
-                         ? imm_j :
-                         32'b0; //Default case (R-type instructions)
+       // Opcodes
+    localparam OPC_I_ARITH = 7'b0010011;
+    localparam OPC_LOAD     = 7'b0000011;
+    localparam OPC_JALR     = 7'b1100111;
+    localparam OPC_STORE    = 7'b0100011;
+    localparam OPC_LUI      = 7'b0110111;
+    localparam OPC_AUIPC    = 7'b0010111;
+    localparam OPC_JAL      = 7'b1101111;
 
+    assign o_immediate = (i_inst[6:0] == OPC_I_ARITH ||  // I-type arithmetic
+                         i_inst[6:0] == OPC_LOAD ||    // loads
+                         i_inst[6:0] == OPC_JALR)      // JALR (I-type)
+                         ? imm_i :
+                         (i_inst[6:0] == OPC_STORE)    ? imm_s :
+                         (i_inst[6:0] == OPC_LUI || i_inst[6:0] == OPC_AUIPC) ? imm_u :
+                         (i_inst[6:0] == OPC_JAL)     ? imm_j :
+                         32'b0;
 endmodule
 
 `default_nettype wire

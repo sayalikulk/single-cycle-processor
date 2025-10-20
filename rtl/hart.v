@@ -140,10 +140,16 @@ module hart #(
     wire [31:0] branch_target;
     wire [31:0] writeback_data;
 
+    // internal control signals driven by control unit
+    wire mem_read_s, mem_write_s, reg_write_s;
+
+    wire ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
+
     // --- Program Counter ---
     PC pc_inst (
         .i_clk(i_clk),
         .i_rst(i_rst),
+        .i_ebreak(ebreak),
         .current_pc(o_imem_raddr),
         .en_branch(en_branch),
         .branch_target(branch_target)
@@ -153,12 +159,12 @@ module hart #(
     // --- Control Unit ---
     Control_unit control_unit_inst (
         .opcode(i_imem_rdata[6:0]),
-        .ALU_zero(ALU_zero),
+        .ALU_zero(alu_zero),
         .alu_src(ALU_src),
         .mem_to_reg(mem_to_reg),
-        .reg_write(reg_write),
-        .mem_read(o_dmem_ren),
-        .mem_write(o_dmem_wen),
+        .reg_write(reg_write_s),     // internal wire
+        .mem_read(mem_read_s),       // internal wire
+        .mem_write(mem_write_s),     // internal wire
         .Branch(Branch),
         .Jump(Jump),
         .Jalr(Jalr),
@@ -183,15 +189,19 @@ module hart #(
         .o_alu_control(i_opsel)
     );
 
-    // --- Register File ---
-    reg_file rf (
+    wire rf_wen = reg_write_s & ~ebreak;
+
+    // instantiate reg_file with bypass disabled to avoid combinational feedback
+    reg_file #(
+        .BYPASS_EN(0)
+    ) rf (
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_rs1_raddr(i_imem_rdata[19:15]),
         .o_rs1_rdata(i_op1),
         .i_rs2_raddr(i_imem_rdata[24:20]),
         .o_rs2_rdata(o_rs2),
-        .i_rd_wen(reg_write),
+        .i_rd_wen(rf_wen),
         .i_rd_waddr(i_imem_rdata[11:7]),
         .i_rd_wdata(writeback_data)
     );
@@ -212,12 +222,10 @@ module hart #(
 
     // --- Writeback ---
     assign writeback_data = (mem_to_reg) ? i_dmem_rdata : o_result;
-    wire ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
     assign o_retire_halt      = ebreak;
-    wire rf_wen; // Disable register file write on ebreak
-    assign rf_wen = reg_write & ~ebreak;
-    assign o_dmem_wen = o_dmem_wen & ~ebreak;
-    assign o_dmem_ren = o_dmem_ren & ~ebreak;
+
+    assign o_dmem_ren = mem_read_s & ~ebreak;
+    assign o_dmem_wen = mem_write_s & ~ebreak;
     
     // --- Data Memory interface ---
     assign o_dmem_addr  = o_result;
@@ -229,7 +237,7 @@ module hart #(
     assign o_retire_valid     = 1'b1;
     assign o_retire_inst      = i_imem_rdata;
     assign o_retire_trap      = 1'b0;
-    assign o_retire_halt      = 1'b0;
+    // assign o_retire_halt      = 1'b0;
     assign o_retire_rs1_raddr = i_imem_rdata[19:15];
     assign o_retire_rs2_raddr = i_imem_rdata[24:20];
     assign o_retire_rs1_rdata = i_op1;
