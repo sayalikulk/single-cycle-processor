@@ -23,8 +23,7 @@ module Control_unit (
     
     // U-Type Instruction Signals
     output wire load_upper_imm, // U-type (LUI)
-    output wire upper_imm,      // U-type (AUIPC) - Renamed from original
-    output wire en_branch
+    output wire upper_imm      // U-type (AUIPC) - Renamed from original
 );
 
     // --- Opcode Definitions ---
@@ -107,7 +106,5 @@ module Control_unit (
                     (opcode == OP_ADD_UPPER_IMM)  ? 3'b110 :
                     (opcode == OP_JUMP)   ? 3'b111 : // Anyway Jump won't be used in ALU control so not distincting between JAL and JALR
                     3'b000; // Default to R-type
-
-    assign en_branch = ALU_zero && Branch;
     
 endmodule

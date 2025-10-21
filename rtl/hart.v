@@ -136,7 +136,6 @@ module hart #(
     wire alu_zero, ALU_src, mem_to_reg, reg_write;
     wire [2:0] ALU_OP;
     wire Branch, Jump, Jalr, load_upper_imm, upper_imm;
-    wire en_branch;
     wire [31:0] branch_target;
     wire [31:0] writeback_data;
 
@@ -145,14 +144,29 @@ module hart #(
 
     wire ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
 
+    wire [31:0] pc = o_imem_raddr;
+    wire [2:0] i_funct3 = i_imem_rdata[14:12];
+
+    wire [31:0] pc_plus_4 = pc + 4;
+    wire branch_taken = Branch && ((i_funct3 == 3'b000 && alu_zero) || // BEQ
+                                (i_funct3 == 3'b001 && !alu_zero) || // BNE
+                                (i_funct3 == 3'b100 && $signed(i_op1) < $signed(i_op2)) || // BLT
+                                (i_funct3 == 3'b101 && $signed(i_op1) >= $signed(i_op2)) || // BGE
+                                (i_funct3 == 3'b110 && i_op1 < i_op2) || // BLTU
+                                (i_funct3 == 3'b111 && i_op1 >= i_op2)); // BGEU
+
+    wire [31:0] next_pc = (ebreak) ? pc :
+                        Jump ? pc + o_imm :
+                        Jalr ? (i_op1 + o_imm) & ~32'd1 :
+                        branch_taken ? pc + o_imm :
+                        pc_plus_4;
+
     // --- Program Counter ---
     PC pc_inst (
         .i_clk(i_clk),
         .i_rst(i_rst),
-        .i_ebreak(ebreak),
         .current_pc(o_imem_raddr),
-        .en_branch(en_branch),
-        .branch_target(branch_target)
+        .i_next_pc(next_pc)
     );
 
     
@@ -170,8 +184,7 @@ module hart #(
         .Jalr(Jalr),
         .load_upper_imm(load_upper_imm),
         .ALU_OP(ALU_OP),
-        .upper_imm(upper_imm),
-        .en_branch(en_branch)
+        .upper_imm(upper_imm)
     );
 
     // --- Immediate Generator ---
@@ -216,9 +229,9 @@ module hart #(
         .alu_zero(alu_zero)
     );
 
-    // --- Branch logic ---
-    //assign en_branch    = Branch & alu_zero;
-    //assign branch_target = o_imm; // simple branch offset
+    always @(posedge i_clk)
+        if (ebreak) $display("EBREAK detected at PC=%h", o_imem_raddr);
+
 
     // --- Writeback ---
     assign writeback_data = (mem_to_reg) ? i_dmem_rdata : o_result;
@@ -245,7 +258,7 @@ module hart #(
     assign o_retire_rd_waddr  = i_imem_rdata[11:7];
     assign o_retire_rd_wdata  = writeback_data;
     assign o_retire_pc        = o_imem_raddr;
-    assign o_retire_next_pc   = o_imem_raddr + 4;
+    assign o_retire_next_pc   = next_pc;
 
 endmodule
 
