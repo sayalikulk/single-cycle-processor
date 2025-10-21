@@ -9,7 +9,7 @@
 // NOTE: This can be implemented either by silently discarding writes to
 // address 5'd0, or by muxing the output to zero when reading from that
 // address.
-module reg_file #(
+module rf #(
     // When this parameter is set to 1, "RF bypass" mode is enabled. This
     // allows data at the write port to be observed at the read ports
     // immediately without having to wait for the next clock edge. This is

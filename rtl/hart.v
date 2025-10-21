@@ -140,22 +140,29 @@ module hart #(
     wire [31:0] writeback_data;
 
     // internal control signals driven by control unit
-    wire mem_read_s, mem_write_s, reg_write_s;
+    wire mem_read_s, mem_write_s;
 
-    wire ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
+    wire ebreak;
 
-    wire [31:0] pc = o_imem_raddr;
-    wire [2:0] i_funct3 = i_imem_rdata[14:12];
+    assign ebreak = (i_imem_rdata == 32'h00100073); // ebreak instruction
 
-    wire [31:0] pc_plus_4 = pc + 4;
-    wire branch_taken = Branch && ((i_funct3 == 3'b000 && alu_zero) || // BEQ
+    wire [31:0] pc;
+    assign pc = o_imem_raddr;
+    wire [2:0] i_funct3; 
+    assign i_funct3 = i_imem_rdata[14:12];
+
+    wire [31:0] pc_plus_4;
+    assign pc_plus_4 = pc + 4;
+    wire branch_taken;
+    assign branch_taken = Branch && ((i_funct3 == 3'b000 && alu_zero) || // BEQ
                                 (i_funct3 == 3'b001 && !alu_zero) || // BNE
                                 (i_funct3 == 3'b100 && $signed(i_op1) < $signed(i_op2)) || // BLT
                                 (i_funct3 == 3'b101 && $signed(i_op1) >= $signed(i_op2)) || // BGE
                                 (i_funct3 == 3'b110 && i_op1 < i_op2) || // BLTU
                                 (i_funct3 == 3'b111 && i_op1 >= i_op2)); // BGEU
 
-    wire [31:0] next_pc = (ebreak) ? pc :
+    wire [31:0] next_pc
+    assign next_pc = (ebreak) ? pc :
                         Jump ? pc + o_imm :
                         Jalr ? (i_op1 + o_imm) & ~32'd1 :
                         branch_taken ? pc + o_imm :
@@ -176,7 +183,7 @@ module hart #(
         .ALU_zero(alu_zero),
         .alu_src(ALU_src),
         .mem_to_reg(mem_to_reg),
-        .reg_write(reg_write_s),     // internal wire
+        .reg_write(reg_write),     // internal wire
         .mem_read(mem_read_s),       // internal wire
         .mem_write(mem_write_s),     // internal wire
         .Branch(Branch),
@@ -202,10 +209,12 @@ module hart #(
         .o_alu_control(i_opsel)
     );
 
-    wire rf_wen = reg_write_s & ~ebreak;
+    wire rf_wen;
 
-    // instantiate reg_file with bypass disabled to avoid combinational feedback
-    reg_file #(
+    assign rf_wen = reg_write & ~ebreak;
+
+    // instantiate rf with bypass disabled to avoid combinational feedback
+    rf #(
         .BYPASS_EN(0)
     ) rf (
         .i_clk(i_clk),

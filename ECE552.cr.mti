@@ -1,0 +1,50 @@
+{C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/tb/tb.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/tb/tb.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module hart_tb
+
+Top level modules:
+	hart_tb
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/alu_control.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/alu_control.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module alu_control
+
+Top level modules:
+	alu_control
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/alu.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/alu.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module ALU
+
+Top level modules:
+	ALU
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/PC.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/PC.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module PC
+
+Top level modules:
+	PC
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/imm.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/imm.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module imm
+
+Top level modules:
+	imm
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/rf.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/rf.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module rf
+
+Top level modules:
+	rf
+
+} {} {}} {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/Control_unit.v} {1 {vlog -work work -stats=none {C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/rtl/Control_unit.v}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module Control_unit
+
+Top level modules:
+	Control_unit
+
+} {} {}}
