@@ -161,7 +161,7 @@ module hart #(
                                 (i_funct3 == 3'b110 && i_op1 < i_op2) || // BLTU
                                 (i_funct3 == 3'b111 && i_op1 >= i_op2)); // BGEU
 
-    wire [31:0] next_pc
+    wire [31:0] next_pc;
     assign next_pc = (ebreak) ? pc :
                         Jump ? pc + o_imm :
                         Jalr ? (i_op1 + o_imm) & ~32'd1 :
