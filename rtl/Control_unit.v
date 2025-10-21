@@ -6,8 +6,6 @@
  */
 module Control_unit (
     input wire [6:0] opcode,        // 7-bit opcode from instruction[6:0]
-    input wire ALU_zero,
-    
     // Control Signals
     output wire mem_to_reg,   // Selects (memory data) or (ALU result) to write to register
     output wire reg_write,    // Enable writing to the register file

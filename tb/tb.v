@@ -82,7 +82,7 @@ module hart_tb ();
 
         // Load the test program into memory at address 0.
         $display("Loading program.");
-        $readmemh("C:/Users/Tanya R J/Desktop/ECE552_Project/Phase_4_GIT/tb/program.mem", imem);
+        $readmemh("I:/ECE552/single-cycle-processor/single-cycle-processor/tb/program.mem", imem);
 
         // Reset the dut.
         $display("Resetting hart.");

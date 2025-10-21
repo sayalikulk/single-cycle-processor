@@ -135,8 +135,7 @@ module hart #(
     wire [3:0]  i_opsel;
     wire alu_zero, ALU_src, mem_to_reg, reg_write;
     wire [2:0] ALU_OP;
-    wire Branch, Jump, Jalr, load_upper_imm, upper_imm;
-    wire [31:0] branch_target;
+    wire Branch, Jal, Jalr, load_upper_imm, upper_imm;
     wire [31:0] writeback_data;
 
     // internal control signals driven by control unit
@@ -163,8 +162,8 @@ module hart #(
 
     wire [31:0] next_pc;
     assign next_pc = (ebreak) ? pc :
-                        Jump ? pc + o_imm :
-                        Jalr ? (i_op1 + o_imm) & ~32'd1 :
+                        Jal ? pc + o_imm :
+                        Jalr ? o_imm :
                         branch_taken ? pc + o_imm :
                         pc_plus_4;
 
@@ -180,14 +179,13 @@ module hart #(
     // --- Control Unit ---
     Control_unit control_unit_inst (
         .opcode(i_imem_rdata[6:0]),
-        .ALU_zero(alu_zero),
         .alu_src(ALU_src),
         .mem_to_reg(mem_to_reg),
         .reg_write(reg_write),     // internal wire
         .mem_read(mem_read_s),       // internal wire
         .mem_write(mem_write_s),     // internal wire
         .Branch(Branch),
-        .Jump(Jump),
+        .Jump(Jal),
         .Jalr(Jalr),
         .load_upper_imm(load_upper_imm),
         .ALU_OP(ALU_OP),
@@ -197,7 +195,7 @@ module hart #(
     // --- Immediate Generator ---
     imm imm_gen_inst (
         .i_inst(i_imem_rdata),
-        .branch_target(branch_target),
+        .i_op1(i_op1),
         .o_immediate(o_imm)
     );
 
@@ -211,7 +209,7 @@ module hart #(
 
     wire rf_wen;
 
-    assign rf_wen = reg_write & ~ebreak;
+    assign rf_wen = reg_write & ~ebreak & ~Branch;
 
     // instantiate rf with bypass disabled to avoid combinational feedback
     rf #(
@@ -231,29 +229,85 @@ module hart #(
     // --- ALU ---
     assign i_op2 = (ALU_src) ? o_imm : o_rs2;
     ALU alu_inst (
+        .i_alu_op(ALU_OP),
         .i_opsel(i_opsel),
         .i_op1(i_op1),
         .i_op2(i_op2),
+        .opcode(i_imem_rdata[6:0]),
+        .pc(pc),
         .o_result(o_result),
         .alu_zero(alu_zero)
     );
 
-    always @(posedge i_clk)
-        if (ebreak) $display("EBREAK detected at PC=%h", o_imem_raddr);
 
+       // --- Data Memory interface (aligned address, shifted mask, shifted data) ---
+    // Align the dmem address to a 32-bit word boundary
+    wire [1:0] byte_offset;
+    assign byte_offset = o_result[1:0];
+    assign o_dmem_addr = {o_result[31:2], 2'b00}; // align down to word boundary
 
+    // shift write data into the correct byte lanes for stores
+    wire [31:0] shifted_wdata;
+    assign shifted_wdata = o_rs2 << (byte_offset * 8);
+    assign o_dmem_wdata = shifted_wdata;
+
+    // base mask for width (before offset shifting)
+    // For stores: funct3 000 = SB (byte), 001 = SH (half), 010 = SW (word)
+    // For loads we use same widths to generate mask
+    reg [3:0] base_mask;
+    always @(*) begin
+        // Map funct3 to a base byte mask (before shifting by byte_offset).
+        // Handles both load and store encodings:
+        // 000 LB / SB -> byte
+        // 001 LH / SH -> half
+        // 010 LW / SW -> word
+        // 100 LBU      -> byte (unsigned)
+        // 101 LHU      -> half (unsigned)
+        case (i_funct3)
+            3'b000: base_mask = 4'b0001; // byte (LB / SB)
+            3'b001: base_mask = 4'b0011; // half (LH / SH)
+            3'b010: base_mask = 4'b1111; // word (LW / SW)
+            3'b100: base_mask = 4'b0001; // LBU -> byte
+            3'b101: base_mask = 4'b0011; // LHU -> half
+            default: base_mask = 4'b1111; // default full word (safe fallback)
+        endcase
+    end
+
+    // shift the base_mask left by the byte offset to position in the aligned word.
+    wire [3:0] shifted_mask;
+    assign shifted_mask = base_mask << byte_offset;
+
+    // Only drive mask for load/store opcodes (opcode == 0x03 load, or 0x23 store)
+    assign o_dmem_mask = (i_imem_rdata[6:0] == 7'h03 || i_imem_rdata[6:0] == 7'h23) ? shifted_mask : 4'b1111;
+
+    // --- Load result extraction + sign/zero extend ---
+    // Read the full aligned word from memory, shift right to place requested
+    // byte/half into LSBs, then sign/zero-extend according to funct3.
+    wire [31:0] aligned_rdata;
+    assign aligned_rdata = i_dmem_rdata; // i_dmem_rdata is read from aligned address
+
+    wire [31:0] shifted_rdata;
+    assign shifted_rdata = aligned_rdata >> (byte_offset * 8);
+
+    // produce the final load data (sign/zero extension where appropriate)
+    wire [31:0] load_result;
+    assign load_result = (i_funct3 == 3'b000) ? {{24{shifted_rdata[7]}}, shifted_rdata[7:0]} :  // LB
+                         (i_funct3 == 3'b001) ? {{16{shifted_rdata[15]}}, shifted_rdata[15:0]} : // LH
+                         (i_funct3 == 3'b100) ? {24'h0, shifted_rdata[7:0]} : // LBU
+                         (i_funct3 == 3'b101) ? {16'h0, shifted_rdata[15:0]} : // LHU
+                         shifted_rdata; // LW or default
+
+    // finally, use load_result in writeback selection
+    wire [31:0] i_dmem_rdata_loads;
+    assign i_dmem_rdata_loads = (i_imem_rdata[6:0] == 7'h03) ? load_result : i_dmem_rdata;
+    
     // --- Writeback ---
-    assign writeback_data = (mem_to_reg) ? i_dmem_rdata : o_result;
+    assign writeback_data = (Jal || Jalr) ? pc_plus_4 : (mem_to_reg) ? i_dmem_rdata_loads : o_result;
     assign o_retire_halt      = ebreak;
 
     assign o_dmem_ren = mem_read_s & ~ebreak;
     assign o_dmem_wen = mem_write_s & ~ebreak;
-    
-    // --- Data Memory interface ---
-    assign o_dmem_addr  = o_result;
-    assign o_dmem_wdata = o_rs2;
-    assign o_dmem_mask  = 4'b1111; // simple word access for now
-    
+
 
       //--- Retire interface ---
     assign o_retire_valid     = 1'b1;
@@ -264,7 +318,7 @@ module hart #(
     assign o_retire_rs2_raddr = i_imem_rdata[24:20];
     assign o_retire_rs1_rdata = i_op1;
     assign o_retire_rs2_rdata = o_rs2;
-    assign o_retire_rd_waddr  = i_imem_rdata[11:7];
+    assign o_retire_rd_waddr  = (~Branch && i_imem_rdata[6:0] != 7'b0100011) ? i_imem_rdata[11:7] : 5'h00;
     assign o_retire_rd_wdata  = writeback_data;
     assign o_retire_pc        = o_imem_raddr;
     assign o_retire_next_pc   = next_pc;

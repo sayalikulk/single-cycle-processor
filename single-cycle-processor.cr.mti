@@ -1,0 +1,50 @@
+I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/PC.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/PC.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module PC
+
+Top level modules:
+	PC
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/imm.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/imm.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module imm
+
+Top level modules:
+	imm
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/rf.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/rf.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module rf
+
+Top level modules:
+	rf
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/Control_unit.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/Control_unit.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module Control_unit
+
+Top level modules:
+	Control_unit
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/alu_control.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/alu_control.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module alu_control
+
+Top level modules:
+	alu_control
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/alu.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/rtl/alu.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module ALU
+
+Top level modules:
+	ALU
+
+} {} {}} I:/ECE552/single-cycle-processor/single-cycle-processor/tb/tb.v {1 {vlog -work work -vopt -stats=none I:/ECE552/single-cycle-processor/single-cycle-processor/tb/tb.v
+Questa Intel Starter FPGA Edition-64 vlog 2024.3 Compiler 2024.09 Sep 10 2024
+-- Compiling module hart_tb
+
+Top level modules:
+	hart_tb
+
+} {} {}}

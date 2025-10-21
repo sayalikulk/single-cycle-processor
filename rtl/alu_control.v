@@ -61,7 +61,7 @@ module alu_control (
 
                             (i_alu_op == OP_LOAD_UPPER_IMM) ? 4'b1010 : // LUI
 
-                            (i_alu_op == OP_ADD_UPPER_IMM) ? 4'b0000 : // AUIPC (ADD)
+                            (i_alu_op == OP_ADD_UPPER_IMM) ? 4'b1010 : // AUIPC (ADD)
 
                             (i_alu_op == OP_JUMP) ? 4'b0000 : // ADD for JAL/JALR address
 
